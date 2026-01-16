@@ -1,0 +1,17 @@
+# For more information about the available options please visit: http://go/catalog-info (VPN required)
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: Unity-Technologies/RenderGraphWebinarSample01
+  name: RenderGraphWebinarSample01
+  description: "Sample code for a Render Graph webinar scheduled to be held in January 2026."
+  labels:
+    costcenter: "1047"
+  tags:
+    - planned-public
+    - enterprise
+spec:
+  type: other
+  lifecycle: production
+  owner: Unity-Technologies/lighthouse-japan
