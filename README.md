@@ -2,7 +2,7 @@
 # RenderGraphWebinarSample01
 Here is a sample code that uses Render Graph to perform two-pass blur.
 
-![image0](ReadmeImages/image0.gif)
+![image0](~ReadmeImages/image0.gif)
 
 ## Requirement  
 - Unity 6000.3.3f1 LTS
@@ -19,13 +19,13 @@ The `URP_COMPATIBILITY_MODE` scripting define symbol is set in Player Settings, 
 If you want to see the scene rendered with Render Graph, please turn Compatibility Mode off.  
 The final image will not change, but Render Graph will be used in the render pipeline.
 
-![image2](ReadmeImages/image2.png)
-![image1](ReadmeImages/image1.png)
+![image2](~ReadmeImages/image2.png)
+![image1](~ReadmeImages/image1.png)
 
 The TwoPassBlurFeature currently used in `Blur_Renderer.asset` uses an Unsafe Pass.  
 If you want to check the version that uses a Raster Render Pass, disable TwoPassBlurFeature and enable TwoPassRasterBlurRendererFeature, which is not supported in Compatibility Mode.
 
-![image3](ReadmeImages/image3.png)
+![image3](~ReadmeImages/image3.png)
 
 ## LICENSE
 
