@@ -1,6 +1,6 @@
 {
   "name": "com.tw0catsgames.two-pass-blur",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "displayName": "Two Pass Blur Renderer Feature",
   "description": "Two Pass Blur Renderer Feature",
   "unity": "6000.3",
@@ -10,10 +10,10 @@
   "licensesUrl": "https://github.com/Torgo13/TwoPassBlur/blob/main/LICENSE.md",
   "dependencies": {
     "com.unity.render-pipelines.universal": "17.3.0"
-  }
+  },
   "keywords": [
     "unity",
     "rendering",
     "graphics"
-  ],
+  ]
 }
