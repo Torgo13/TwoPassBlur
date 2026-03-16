@@ -1,17 +1,20 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 Shader "Hidden/RGSample/2PassBlur"
 {
     SubShader
     {
         Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline"}
         LOD 100
+        ZTest Never 
+        ZWrite OFf 
+        Cull Off
+        Blend One Zero
 
         Pass
         {
             Name "DownSample Vertical"
-            ZTest Never 
-            ZWrite OFf 
-            Cull Off
-            Blend One Zero
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -36,6 +39,7 @@ Shader "Hidden/RGSample/2PassBlur"
             half4 Fragment(Varyings input) : SV_Target 
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+#if defined(SHADER_API_MOBILE)
                 half2 scale = half2(_BlurSize, 0);
 
                 half4 color = 0;
@@ -45,6 +49,22 @@ Shader "Hidden/RGSample/2PassBlur"
                     half4 blurColor = SAMPLE_TEXTURE2D(_BlitTexture, sampler_LinearClamp, input.texcoord + ofs);
                     color.rgb += blurColor.rgb * BLUR_KERNEL[i];
                 }
+#else
+                //https://github.com/microsoft/MixedReality-GraphicsTools-Unity/blob/7d9f9160d8c615f4f456024478a84df8bd75469e/com.microsoft.mrtk.graphicstools.unity/Runtime/Experimental/Acrylic/Shaders/AcrylicDualBlur.shader#L58
+                float2 _AcrylicBlurOffset = _BlurSize;
+                float2 _AcrylicHalfPixel = 0.5;
+
+                half4 color;                
+                color.rgb = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord).rgb * 4.0;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + _AcrylicHalfPixel * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord - _AcrylicHalfPixel * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(-_AcrylicHalfPixel.x, _AcrylicHalfPixel.y) * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(_AcrylicHalfPixel.x, -_AcrylicHalfPixel.y) * _AcrylicBlurOffset).rgb;
+
+                color.rgb *= 0.125;
+                color.a = 1.0;
+#endif // SHADER_API_MOBILE
+
                 return color;
             }
             ENDHLSL
@@ -52,10 +72,6 @@ Shader "Hidden/RGSample/2PassBlur"
         Pass
         {
             Name "DownSample Horizontal"
-            ZTest Never 
-            ZWrite OFf 
-            Cull Off
-            Blend One Zero
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -80,6 +96,7 @@ Shader "Hidden/RGSample/2PassBlur"
             half4 Fragment(Varyings input) : SV_Target 
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+#if defined(SHADER_API_MOBILE)
                 float2 scale = float2(0, _BlurSize);
 
                 half4 color = 0; 
@@ -89,6 +106,24 @@ Shader "Hidden/RGSample/2PassBlur"
                     half4 blurColor = SAMPLE_TEXTURE2D_LOD(_BlitTexture, sampler_LinearClamp, input.texcoord + ofs, 0);
                     color.rgb += blurColor.rgb * BLUR_KERNEL[i];
                 }
+#else
+                //https://github.com/microsoft/MixedReality-GraphicsTools-Unity/blob/7d9f9160d8c615f4f456024478a84df8bd75469e/com.microsoft.mrtk.graphicstools.unity/Runtime/Experimental/Acrylic/Shaders/AcrylicDualBlur.shader#L73
+                float2 _AcrylicBlurOffset = _BlurSize;
+                float2 _AcrylicHalfPixel = 0.5;
+
+                half4 color;
+                color.rgb = SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(-_AcrylicHalfPixel.x * 2.0, 0.0) * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(-_AcrylicHalfPixel.x, _AcrylicHalfPixel.y) * _AcrylicBlurOffset).rgb * 2.0;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(0.0, _AcrylicHalfPixel.y * 2.0) * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(_AcrylicHalfPixel.x, _AcrylicHalfPixel.y) * _AcrylicBlurOffset).rgb * 2.0;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(_AcrylicHalfPixel.x * 2.0, 0.0) * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(_AcrylicHalfPixel.x, -_AcrylicHalfPixel.y) * _AcrylicBlurOffset).rgb * 2.0;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(0.0, -_AcrylicHalfPixel.y * 2.0) * _AcrylicBlurOffset).rgb;
+                color.rgb += SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, input.texcoord + float2(-_AcrylicHalfPixel.x, -_AcrylicHalfPixel.y) * _AcrylicBlurOffset).rgb * 2.0;
+
+                color.rgb *= (1.0 / 12.0);
+                color.a = 1.0;
+#endif // SHADER_API_MOBILE
 
                 return color;
             }
